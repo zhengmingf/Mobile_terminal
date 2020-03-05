@@ -1,0 +1,13 @@
+- config:
+    name: test kuaidi100 api
+    request:
+        base_url: http://www.kuaidi100.com
+            
+- test:
+    name: test kuaidi100 one
+    request:
+        url: /query
+        method: GET
+        params:
+            type: huitongkuaidi
+            postid: 350757858666
