@@ -1,8 +1,38 @@
 # encoding: utf-8
 """
 @version: v1.0.1
-@time: 2020/1/7 19:47
+@time: 2020/2/10 19:47
 """
+
+'''
+说明：
+功能模块以函数到形式放在测试用例的前面部分，测试用例用到到地方，自行调用
+1 函数部分
+setUp：初始化设备，包括设备信息，如果需要更改设备、平台等，需要在此处修改，此部分启动App，每次启动重新安装app，后面可以根据业务进行设置，不是所有等操作都需要重新安装app
+getXpath_data_list和getXpath_data：获得元素都xpath，统一放在Data文件夹中进行管理
+login：登录，参数为登录账号，密码默认是6个1
+environmental_science：正式环境切换到测试环境，正式环境默认使用到账号是zstest001@qq.com
+register：注册
+char_note：聊天中发送文字、表情、图片、相机-拍照、相机-录像、群组通话、涂鸦、介绍好友、贺卡、上课
+create_group_chat：创建群聊（对账号对要求是必须有三个互相关注对好友）
+join_group_char：直接进入群聊界面
+function_text_test：文字功能键，文字功能键-翻译\改错\朗读\音译\回复\复制\收藏
+quit_group_chat：退出群聊（自动化产生大量群，用于清理数据用）
+group_chat_set：群聊设置所有功能，最后是退出群聊。
+char_search_tab：聊天模块对搜索功能
+voice_function：语音功能（此部分存在问题，没有被单独调用，先留着）
+choice_environmental: 切换环境，不填参数进入测试环境，填写任意参数进入正式环境
+2 测试用例部分
+test_register_formal：正式环境注册
+test_register_test：测试环境注册（从功能讲，应该只要一个注册就可以，这个作用方便以后创建大量用户）
+test_login_formal：正式环境登录
+test_login_test：测试环境登录（从功能讲，也是应该只要一个登录就可以，主要是有些功能不方便在正式环境操作）
+test_char：测试环境关注，关注页面所有人，如果已经关注了，点击取消，再次关注
+test_char_test：群聊-创建群聊、聊天中发布各种类型的消息、群聊设置
+test_commont：动态-发布各种类型的动态
+
+'''
+
 import unittest,SlidingScreen,time,random,GetXpath
 
 from appium import webdriver
@@ -38,9 +68,8 @@ class TestCaseSet(unittest.TestCase):
                 if key == xpath_data:
                     return value
 
-
     def login(self,mail_name):
-        '''登录'''
+        '''登录，参数为登录账号，密码默认是6个1'''
         xpath_name = "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout[1]/android.widget.LinearLayout[1]/android.widget.LinearLayout/android.widget.EditText"
         xpath_pwd = "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout[1]/android.widget.LinearLayout[2]/android.widget.LinearLayout/android.widget.EditText"
         try:
@@ -56,7 +85,7 @@ class TestCaseSet(unittest.TestCase):
             pass
 
     def environmental_science(self):
-        '''正式环境切换到测试环境'''
+        '''正式环境切换到测试环境，正式环境默认使用到账号是zstest001@qq.com'''
         self.login('zstest001@qq.com')
         # 我
         get_xpath_list = self.getXpath_data_list("me")
@@ -137,9 +166,10 @@ class TestCaseSet(unittest.TestCase):
         print('注册完成')
 
     def char_note(self,get_xpath_list):
+        '''聊天中发送文字、表情、图片、相机-拍照、相机-录像、群组通话、涂鸦、介绍好友、贺卡、上课，语音（通话存在bug，暂时去掉）'''
         self.driver.find_element_by_id("com.hellotalk:id/msg_input_text").send_keys('自动化测试')
         self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
-        print("群聊--聊天发送文字")
+        print("群聊--聊天发送文字测试通过")
 
         self.driver.find_element_by_id("com.hellotalk:id/btn_emoji").click()
         btn_emoji = self.getXpath_data(get_xpath_list, "btn_emoji")
@@ -148,7 +178,6 @@ class TestCaseSet(unittest.TestCase):
                 btn_emoji + str(i) + "]/android.widget.FrameLayout/android.widget.TextView").click()
         self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
         print("群聊--聊天发送表情测试通过")
-        # #语音遇到问题
         # 发送图片等
         self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
         btn_add_one = self.getXpath_data(get_xpath_list, "btn_add_one")
@@ -164,13 +193,16 @@ class TestCaseSet(unittest.TestCase):
             except:
                 pass
 
-        #self.driver.find_element_by_id("android:id/button1").click()
+
         self.driver.find_element_by_id("com.hellotalk:id/send").click()
         print("聊天发送-图片测试通过")
-        # 发送-相机
-        # self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
+        #发送-相机
         btn_add_two = self.getXpath_data(get_xpath_list, "btn_add_two")
-        self.driver.find_element_by_xpath(btn_add_two).click()
+        try:
+            self.driver.find_element_by_xpath(btn_add_two).click()
+        except:
+            self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
+            self.driver.find_element_by_xpath(btn_add_two).click()
         btn_add_two_next_one = self.getXpath_data(get_xpath_list, "btn_add_two_next_one")
         self.driver.find_element_by_xpath(btn_add_two_next_one).click()
         try:
@@ -181,7 +213,7 @@ class TestCaseSet(unittest.TestCase):
         self.driver.press_keycode(27)
         self.driver.find_element_by_id("com.huawei.camera:id/done_button").click()
         self.driver.find_element_by_id("com.hellotalk:id/action_send").click()
-        print("聊天中发送-相机-拍照完成")
+        print("聊天中发送-相机-拍照测试通过")
         btn_add_two = self.getXpath_data(get_xpath_list, "btn_add_two")
         self.driver.find_element_by_xpath(btn_add_two).click()
         btn_add_two_next_two = self.getXpath_data(get_xpath_list, "btn_add_two_next_two")
@@ -190,13 +222,15 @@ class TestCaseSet(unittest.TestCase):
         time.sleep(8)
         self.driver.find_element_by_id("com.hellotalk:id/take_camera").click()
         self.driver.find_element_by_id("com.hellotalk:id/sure").click()
-        print("聊天中发送-相机-录像完成")
-        btn_add_three = self.getXpath_data(get_xpath_list, "btn_add_three")
-        self.driver.find_element_by_xpath(btn_add_three).click()
-        self.driver.find_element_by_id("android:id/text1").click()
-        time.sleep(3)
-        self.driver.find_element_by_id("com.hellotalk:id/callend").click()
-        print("聊天中发送-群组通话")
+        print("聊天中发送-相机-录像测试通过")
+        #聊天中发送通话暂时去掉
+        # btn_add_three = self.getXpath_data(get_xpath_list, "btn_add_three")
+        # self.driver.find_element_by_xpath(btn_add_three).click()
+        # time.sleep(1)
+        # self.driver.find_element_by_id("android:id/text1").click()
+        # time.sleep(3)
+        # self.driver.find_element_by_id("com.hellotalk:id/callend").click()
+        # print("聊天中发送-群组通话测试通过")
         btn_add_four = self.getXpath_data(get_xpath_list, "btn_add_four")
         self.driver.find_element_by_xpath(btn_add_four).click()
 
@@ -266,14 +300,19 @@ class TestCaseSet(unittest.TestCase):
 
         self.driver.find_element_by_id("com.hellotalk:id/action_send").click()
         print("聊天中发送-涂鸦测试通过")
+
         btn_add_five = self.getXpath_data(get_xpath_list, "btn_add_five")
         self.driver.find_element_by_xpath(btn_add_five).click()
+        self.driver.find_element_by_xpath("//androidx.appcompat.app.ActionBar.Tab[@content-desc='互相關注']").click()
+
+
         btn_add_five_next = self.getXpath_data(get_xpath_list, "btn_add_five_next")
         self.driver.find_element_by_xpath(btn_add_five_next).click()
         self.driver.find_element_by_id("android:id/button2").click()
         self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
         btn_add_five = self.getXpath_data(get_xpath_list, "btn_add_five")
         self.driver.find_element_by_xpath(btn_add_five).click()
+        self.driver.find_element_by_xpath("//androidx.appcompat.app.ActionBar.Tab[@content-desc='互相關注']").click()
         btn_add_five_next = self.getXpath_data(get_xpath_list, "btn_add_five_next")
         self.driver.find_element_by_xpath(btn_add_five_next).click()
         self.driver.find_element_by_id("android:id/button1").click()
@@ -293,13 +332,64 @@ class TestCaseSet(unittest.TestCase):
         print("聊天中发送-发送位置测试通过")
         btn_add_eight = self.getXpath_data(get_xpath_list, "btn_add_eight")
         self.driver.find_element_by_xpath(btn_add_eight).click()
-        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
-        self.driver.press_keycode(4)
+        try:
+            self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        except:
+            self.driver.press_keycode(4)
         print("聊天中发送-发送上课测试通过")
+
+        try:
+            self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
+            time.sleep(6)
+        except:
+            self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
+            self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
+
+        self.driver.find_element_by_id("com.hellotalk:id/record_listen_btn").click()
+        time.sleep(2)
+        self.driver.find_element_by_id("com.hellotalk:id/record_listen_send_btn").click()
+        self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
+        time.sleep(6)
+        self.driver.find_element_by_id("com.hellotalk:id/record_listen_btn").click()
+        time.sleep(3)
+        self.driver.find_element_by_id("com.hellotalk:id/record_listen_send_btn").click()
+        self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
+        time.sleep(6)
+        self.driver.find_element_by_id("com.hellotalk:id/record_cancel_btn").click()
+        print("聊天中发送-发送语音测试通过")
+        # 翻译
+        self.driver.find_element_by_id("com.hellotalk:id/btn_translate").click()
+        self.driver.find_element_by_id("com.hellotalk:id/source_text_input").click()
+        self.driver.find_element_by_id("com.hellotalk:id/source_text_input").send_keys("you are the best")
+        self.driver.press_keycode(66)
+        time.sleep(3)
+        try:
+            self.driver.find_element_by_id("com.hellotalk:id/btn_speak_source").click()
+            time.sleep(1)
+            self.driver.back()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_star_source").click()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_copy_source").click()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_send_source").click()
+            self. driver.find_element_by_id("com.hellotalk:id/btn_translate").click()
+            self.driver.find_element_by_id("com.hellotalk:id/source_text_input").click()
+            self.driver.find_element_by_id("com.hellotalk:id/source_text_input").send_keys("you are the best")
+            self.driver.press_keycode(66)
+            self.driver.find_element_by_id("com.hellotalk:id/btn_transliteration").click()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_speak_result").click()
+            time.sleep(1)
+            self.driver.back()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_star_result").click()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_copy_result").click()
+            self.driver.find_element_by_id("com.hellotalk:id/btn_send_result").click()
+        except:
+            self.driver.find_element_by_id("com.hellotalk:id/action_favorites").click()
+
+
 
     def create_group_chat(self,get_xpath_list):
         '''创建群聊'''
         self.driver.find_element_by_id("com.hellotalk:id/icon").click()
+        time.sleep(1)
         create_group_chat = self.getXpath_data(get_xpath_list, "create_group_chat")
         self.driver.find_element_by_xpath(create_group_chat).click()
         self.driver.find_element_by_xpath("//androidx.appcompat.app.ActionBar.Tab[@content-desc='互相關注']").click()
@@ -319,7 +409,9 @@ class TestCaseSet(unittest.TestCase):
 
     def join_group_char(self,get_xpath_list):
         '''进入群聊界面'''
+        time.sleep(1)
         self.driver.find_element_by_id("com.hellotalk:id/icon").click()
+        time.sleep(1)
         create_group_chat = self.getXpath_data(get_xpath_list, "create_group_chat")
         self.driver.find_element_by_xpath(create_group_chat).click()
         self.driver.find_element_by_xpath(
@@ -330,6 +422,7 @@ class TestCaseSet(unittest.TestCase):
     def function_text_test(self,get_xpath_list):
         '''文字功能键'''
         # self.driver.find_element_by_id("com.hellotalk:id/icon").click()
+        #time.sleep(1)
         # create_group_chat = self.getXpath_data(get_xpath_list, "create_group_chat")
         # self.driver.find_element_by_xpath(create_group_chat).click()
         # self.driver.find_element_by_xpath(
@@ -342,25 +435,30 @@ class TestCaseSet(unittest.TestCase):
         self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
 
         def text_function(xpath):
-            time.sleep(3)
+            time.sleep(2)
             SlidingScreen.long_press(self.driver, textView_input, 10000)
             text_function_up = self.getXpath_data(get_xpath_list, xpath)
             self.driver.find_element_by_xpath(text_function_up).click()
 
 
         text_function("text_function_up_one")  # 翻译
+        print("翻译功能")
         text_function("text_function_up_two")  # 改错
+        print("改错功能")
         self.driver.find_element_by_id("com.hellotalk:id/source_text").click()
         self.driver.find_element_by_id("com.hellotalk:id/target_edit").send_keys("modify")
         self.driver.find_element_by_id("com.hellotalk:id/action_edit_wrongtext_send").click()
         self.driver.find_element_by_id("com.hellotalk:id/inclue_text").click()
         self.driver.find_element_by_id("com.hellotalk:id/action_edit_wrongtext_send").click()
         text_function("text_function_up_three")  # 朗读
+        print("朗读功能")
         self.driver.find_element_by_id("com.hellotalk:id/speak_play_img").click()
         self.driver.find_element_by_id("com.hellotalk:id/speak_repeat_img").click()
         self.driver.press_keycode(4)
         text_function("text_function_up_four")  # 音译
+        print("音译功能")
         text_function("text_function_up_eight_more")  # 更多
+        print("更多按钮功能")
         self.driver.find_element_by_id("com.hellotalk:id/more_del").click()
         text_function_up_eight_more_one = self.getXpath_data(get_xpath_list, "text_function_up_eight_more_one")
         self.driver.find_element_by_xpath(text_function_up_eight_more_one).click()
@@ -369,11 +467,14 @@ class TestCaseSet(unittest.TestCase):
         self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
 
         text_function("text_function_up_five")  # 回复
+        print("回复功能")
         textView_input = self.getXpath_data(get_xpath_list, "textView_input")
         self.driver.find_element_by_id("com.hellotalk:id/msg_input_text").send_keys("回复内容")
         self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
         text_function("text_function_up_six")  # 复制
+        print("复制功能")
         text_function("text_function_up_seven")  # 收藏
+        print("收藏功能")
         print("文字功能键-翻译\改错\朗读\音译\回复\复制\收藏测试通过")
 
     def quit_group_chat(self):
@@ -542,8 +643,7 @@ class TestCaseSet(unittest.TestCase):
         print("群聊--设置--删除会话、退出群并删除记录测试通过")
 
     def char_search_tab(self,get_xpath_list):
-
-
+        '''聊天模块搜索'''
         self.driver.find_element_by_id("com.hellotalk:id/main_etEdit").click()
         self.driver.find_element_by_id("com.hellotalk:id/main_etEdit").send_keys("test")
         self.driver.find_element_by_id("com.hellotalk:id/btn_online").click()
@@ -561,6 +661,7 @@ class TestCaseSet(unittest.TestCase):
         self.driver.find_element_by_id("com.hellotalk:id/btn_1").click()
         self.driver.find_element_by_id("com.hellotalk:id/btn_back").click()
         print("聊天模块搜索功能测试通过")
+
     def voice_function(self):
         '''语音功能'''
         try:
@@ -585,6 +686,15 @@ class TestCaseSet(unittest.TestCase):
         time.sleep(6)
         self.driver.find_element_by_id("com.hellotalk:id/record_listen_send_btn").click()
 
+    def choice_environmental(self,envir='test'):
+        '''切换正式环境和测试环境'''
+        if envir == 'test':
+            self.environmental_science()
+            self.login('cstest001@qq.com')
+        else:
+            self.login('zstest001@qq.com')
+
+
 
     #----------------测试用例部分-------------------------#
 
@@ -593,19 +703,19 @@ class TestCaseSet(unittest.TestCase):
     #     user_name = 'zstest' + str(time.time())[:-6:-1] + '@zdhUI.com'
     #     self.register(user_name)
     #     print('正式环境注册测试通过')
-    #
+
     # def test_register_test(self):
     #     '''测试环境注册'''
     #     self.environmental_science()
     #     user_name = 'cstest' + str(time.time())[:-6:-1] + '@zdhUI.com'
     #     self.register(user_name)
     #     print('测试环境注册测试通过')
-    #
+
     # def test_login_formal(self):
     #     '''正式环境登录'''
     #     self.login('zstest001@qq.com')
     #     print('正式环境登录测试通过')
-    #
+
     # def test_login_test(self):
     #     '''测试环境登录'''
     #     self.environmental_science()
@@ -649,72 +759,26 @@ class TestCaseSet(unittest.TestCase):
     #         self.driver.find_element_by_xpath("//android.widget.ImageButton[@content-desc='向上瀏覽']").click()
     #     print("测试环境关注功能测试通过，用例中关注了7个人")
 
-    def test_char_test(self):
-        '''群聊-创建群聊、聊天中发布各种类型的消息、群聊设置'''
-
-        get_xpath_list = self.getXpath_data_list("char")#获得xpath
-        #self.environmental_science()
-        #self.login('cstest001@qq.com')
-        self.login('zstest001@qq.com')
-        self.join_group_char(get_xpath_list)#进入群聊界面
-
-        #self.create_group_chat(get_xpath_list)#创建群聊
-        #self.char_note(get_xpath_list)#聊天中发送各种类型信息
-        # 聊天中发送语音消息
-        # try:
-        #     self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
-        # except:
-        #     self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
-        #     self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
-        #
-        # self.driver.find_element_by_id("com.hellotalk:id/record_listen_btn").click()
-        # time.sleep(6)
-        # self.driver.find_element_by_id("com.hellotalk:id/record_cancel_btn").click()
-        # time.sleep(6)
-        # self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
-        # self.driver.find_element_by_id("com.hellotalk:id/chat_btn_voice").click()
-        # time.sleep(6)
-        # self.driver.find_element_by_id("com.hellotalk:id/record_listen_send_btn").click()
-        #翻译功能
-        try:
-            self.driver.find_element_by_id("com.hellotalk:id/btn_translation").click()
-        except:
-            self.driver.find_element_by_id("com.hellotalk:id/btn_add").click()
-            self.driver.find_element_by_id("com.hellotalk:id/btn_translate").click()
-
-
-        self.driver.find_element_by_id("com.hellotalk:id/source_text_input").click()
-        self.driver.find_element_by_id("com.hellotalk:id/source_text_input").send_keys("you are the best!")
-        self.driver.press_keycode(66)
-
-        self.driver.find_element_by_id("com.hellotalk:id/btn_speak_source").click()
-        self.driver.find_element_by_id("com.hellotalk:id/speak_play_img").click()
-        self.driver.find_element_by_id("com.hellotalk:id/speak_repeat_img").click()
-        time.sleep(1)
-        self.driver.back()
-        self.driver.find_element_by_id("com.hellotalk:id/btn_star_source").click()
-        self.driver.find_element_by_id("com.hellotalk:id/btn_copy_source").click()
-        self.driver.find_element_by_id("com.hellotalk:id/btn_send_source").click()
-        self.driver.find_element_by_id("com.hellotalk:id/btn_translate").click()
-        self.driver.find_element_by_id("com.hellotalk:id/source_text_input").click()
-        self.driver.find_element_by_id("com.hellotalk:id/source_text_input").send_keys("you are the best!")
-        self.driver.press_keycode(66)
-
-        self.driver.find_element_by_id("com.hellotalk:id/btn_transliteration").click()
-        self.driver.find_element_by_id("com.hellotalk:id/btn_speak_result").click()
-        time.sleep(1)
-        self.driver.back()
-        self. driver.find_element_by_id("com.hellotalk:id/btn_star_result").click()
-
-        self.driver.find_element_by_id("com.hellotalk:id/btn_send_result").click()
-
-
-        #调试到聊天中使用翻译功能
-
-        #self.function_text_test(get_xpath_list)#文字功能键
+    # def test_char_test(self):
+    #     '''群聊-创建群聊、聊天中发布各种类型的消息、群聊设置'''
+    #
+    #     get_xpath_list = self.getXpath_data_list("char")#获得xpath
+    #     #切换正式环境和测试环境
+    #     self.choice_environmental()#不填参数进入测试环境，填写任意参数进入正式环境
+    #     #进入群聊界面和创建群聊只能选一个
+    #     #self.join_group_char(get_xpath_list)#进入群聊界面
+    #     self.create_group_chat(get_xpath_list)#创建群聊
+    #     self.function_text_test(get_xpath_list)  # 文字功能键
+    #     #self.char_note(get_xpath_list)#聊天中发送各种类型信息
+    #
     #     #self.quit_group_chat()#退出群聊
-    #     #self.group_chat_set(get_xpath_list)#聊天搜索、设置。由于有会员功能，只能在测试环境测试
+    #     #self.group_chat_set(get_xpath_list)#聊天搜索、群聊设置。由于有会员功能，只能在测试环境测试
     #     #self.char_search_tab(get_xpath_list)#聊天列表搜索，此模块有问题，后期再改，包括加语音伙伴、扫二维码
+
+    # def test_char_operation(self):
+    #     '''在聊天中发送10条语音，全点击播放，播放的过程中发送语音'''
+    #     pass
+
     # def test_commont(self):
     #     '''动态-发布各种类型的动态'''
     #     get_xpath_list = self.getXpath_data_list("common")  # 获得xpath
@@ -916,33 +980,210 @@ class TestCaseSet(unittest.TestCase):
     #     self.driver.find_element_by_id("com.hellotalk:id/action_send").click()
     #     self.driver.find_element_by_id("com.hellotalk:id/action_stream_publish").click()
     #     print("动态页面-发布动态（照相+涂鸦）--测试通过")
-    # def test_operation_commont(self):
-    #     '''动态-搜索、点赞、评论'''
-    #     get_xpath_list = self.getXpath_data_list("common")  # 获得xpath
-    #     #self.login('zstest001@qq.com')
-    #     self.environmental_science()
-    #     self.login('cstest001@qq.com')
-    #     common_button = self.getXpath_data(get_xpath_list, "common_button")
-    #     self.driver.find_element_by_xpath(common_button).click()
+    def test_me(self):
+        '''我'''
+        get_xpath_list = self.getXpath_data_list("me")  # 获得xpath
+        #切换正式环境和测试环境
+        self.choice_environmental()#不填参数进入测试环境，填写任意参数进入正式环境
+        xpath_tab_me = self.getXpath_data(get_xpath_list, "xpath_tab_me")
+        self.driver.find_element_by_xpath(xpath_tab_me).click()
+        try:
+            self.driver.find_element_by_id("android:id/button1").click()
+        except:
+            pass
+        #编辑个人信息
+        self.driver.find_element_by_id("com.hellotalk:id/introduce_view").click()
+        #编辑昵称
+        # self.driver.find_element_by_id("com.hellotalk:id/name_layout").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/name").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/name").clear()
+        # self.driver.find_element_by_id("com.hellotalk:id/name").send_keys("cstest001"+str(time.time())[:-6:-1])
+        # self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        # print("编辑昵称测试通过")
+        #学习语言+位置
+        # self.driver.find_element_by_id("com.hellotalk:id/language_location_layout").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/setting_1_more_lang").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/imageview_dismiss_dialog").click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # self. driver.find_element_by_id("com.hellotalk:id/location_layout").click()
+        # xpath_position_one = self.getXpath_data(get_xpath_list, "xpath_position_one")
+        # self.driver.find_element_by_xpath(xpath_position_one).click()
+        # self.driver.find_element_by_id("android:id/button1").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/location_layout").click()
+        # xpath_position_two = self.getXpath_data(get_xpath_list, "xpath_position_two")
+        # self.driver.find_element_by_xpath(xpath_position_two).click()
+        # self.driver.find_element_by_id("com.hellotalk:id/hidecity").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/hidecountry").click()
+        # self.driver.find_element_by_id("android:id/button1").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/slip_location_off").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/showage").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/showonline").click()
+        #
+        # self.driver.find_element_by_id("com.hellotalk:id/slip_dnd_voip").click()
+        # self.driver.find_element_by_id("android:id/button1").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/useridsearch").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/emailsearch").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/who_can_find_me_layout").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/on_precise").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/same_gender_only").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/on").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/on_precise").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/same_gender_only").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/on").click()
+        # time.sleep(1)
+        # self.driver.find_element_by_id("com.hellotalk:id/on").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/one_month").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/three_month").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/one_week").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/on").click()
+        # # 隐私模块，进度条拖动的效果暂时没有找到解决进
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/hidecity").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/hidecountry").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/slip_location_off").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/showage").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/showonline").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/slip_dnd_voip").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/useridsearch").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/emailsearch").click()
+        # SlidingScreen.swipe_up(self.driver)
+        # self.driver.find_element_by_id("com.hellotalk:id/hide_hisher_moments_layout").click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/hide_my_moments_layout").click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/black_user_list").click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        #
+        # print("编辑个人信息-学习语言+位置测试通过")
+        #我的二维码
+        # self.driver.find_element_by_id("com.hellotalk:id/my_qrcode").click()
+        # self.driver.find_element_by_accessibility_id("更多").click()
+        # xpath_qr_code_one = self.getXpath_data(get_xpath_list, "xpath_qr_code_one")
+        # self.driver.find_element_by_xpath(xpath_qr_code_one).click()
+        # self.driver.find_element_by_accessibility_id("更多").click()
+        # xpath_qr_code_two = self.getXpath_data(get_xpath_list, "xpath_qr_code_two")
+        # self.driver.find_element_by_xpath(xpath_qr_code_two).click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # self.driver.find_element_by_accessibility_id("更多").click()
+        # xpath_qr_code_three = self.getXpath_data(get_xpath_list, "xpath_qr_code_three")
+        # self.driver.find_element_by_xpath(xpath_qr_code_three).click()
+        # self.driver.find_element_by_id("com.hellotalk:id/share_cancel").click()
+        # self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        # print("编辑个人信息-我的二维码测试通过")
 
+        # #文字简介
+        # self.driver.find_element_by_id("com.hellotalk:id/text_introduction_layout").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/content").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/content").clear()
+        # self.driver.find_element_by_id("com.hellotalk:id/content").send_keys("自我介绍"+str(time.time())[:-5:-1])
+        # self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        # print("编辑个人信息-文字简介测试通过")
+        #
+        # #语音自我介绍
+        # self.driver.find_element_by_id("com.hellotalk:id/audio_introduction_menu").click()
+        # time.sleep(7)
+        # self.driver.find_element_by_id("com.hellotalk:id/record_listen_send_btn").click()
+        # time.sleep(5)
+        # try:
+        #     self.driver.find_element_by_id("com.hellotalk:id/audio_introduction_menu").click()
+        # except:
+        #     time.sleep(10)
+        #     self.driver.find_element_by_id("com.hellotalk:id/audio_introduction_menu").click()
+        # self.driver.find_element_by_id("com.hellotalk:id/record_cancel_btn").click()
+        # self.driver.find_element_by_id("android:id/button1").click()
+        # print("编辑个人信息-语音自我介绍测试通过")
 
+        #标签-兴趣
+        xpath_Interest_one = self.getXpath_data(get_xpath_list, "xpath_Interest_one")
+        self.driver.find_element_by_xpath(xpath_Interest_one).click()
+        xpath_Interest_two = self.getXpath_data(get_xpath_list, "xpath_Interest_two")
+        self.driver.find_element_by_xpath(xpath_Interest_two).click()
+        self.driver.find_element_by_id("com.hellotalk:id/content").send_keys("测试兴趣")
+        self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        xpath_Interest_three = self.getXpath_data(get_xpath_list, "xpath_Interest_three")
+        self.driver.find_element_by_xpath(xpath_Interest_three).click()
+        self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        xpath_Interest_four = self.getXpath_data(get_xpath_list, "xpath_Interest_four")
+        self.driver.find_element_by_xpath(xpath_Interest_four).click()
+        xpath_Interest_five = self.getXpath_data(get_xpath_list, "xpath_Interest_five")
+        self.driver.find_element_by_xpath(xpath_Interest_five).click()
+        xpath_Interest_six = self.getXpath_data(get_xpath_list, "xpath_Interest_six")
+        self.driver.find_element_by_xpath(xpath_Interest_six).click()
+        self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        time.sleep(1)
+        print("编辑个人信息-标签-兴趣测试通过")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        #旅行国家
+        xpath_travel_one = self.getXpath_data(get_xpath_list, "xpath_travel_one")
+        self.driver.find_element_by_xpath(xpath_travel_one).click()
+        xpath_travel_two = self.getXpath_data(get_xpath_list, "xpath_travel_two")
+        self.driver.find_element_by_xpath(xpath_travel_two).click()
+        self.driver.find_element_by_id("com.hellotalk:id/content").click()
+        self.driver.find_element_by_id("com.hellotalk:id/content").send_keys("旅行国家")
+        self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        xpath_travel_three = self.getXpath_data(get_xpath_list, "xpath_travel_three")
+        self.driver.find_element_by_xpath(xpath_travel_three).click()
+        self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        xpath_travel_four = self.getXpath_data(get_xpath_list, "xpath_travel_four")
+        self.driver.find_element_by_xpath(xpath_travel_four).click()
+        xpath_travel_five = self.getXpath_data(get_xpath_list, "xpath_travel_five")
+        self.driver.find_element_by_xpath(xpath_travel_five).click()
+        self.driver.find_element_by_id("com.hellotalk:id/check_icon").click()
+        self.driver.find_element_by_id("com.hellotalk:id/action_ok").click()
+        print("编辑个人信息-标签-旅行国家测试通过")
+        #HelloTalk ID
+        self.driver.find_element_by_id("com.hellotalk:id/hellotalk_id_layout").click()
+        self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        print("编辑个人信息-HelloTalk ID测试通过")
+        self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        print("个人档案-编辑个人信息测试通过")
+        #个人档案
+        #个人档案-正在关注
+        self.driver.find_element_by_id("com.hellotalk:id/following_label").click()
+        self.driver.find_element_by_id("com.hellotalk:id/editText").click()
+        self.driver.find_element_by_id("com.hellotalk:id/editText").send_keys("test")
+        xpath_follow_one = self.getXpath_data(get_xpath_list, "xpath_follow_one")
+        self.driver.find_element_by_xpath(xpath_follow_one).click()
+        self.driver.back()
+        self.driver.find_element_by_id("com.hellotalk:id/img_arrow").click()
+        xpath_follow_two = self.getXpath_data(get_xpath_list, "xpath_follow_two")
+        self.driver.find_element_by_xpath(xpath_follow_two).click()
+        self.driver.find_element_by_id("com.hellotalk:id/img_arrow").click()
+        xpath_follow_three = self.getXpath_data(get_xpath_list, "xpath_follow_three")
+        self.driver.find_element_by_xpath(xpath_follow_three).click()
+        self.driver.find_element_by_id("com.hellotalk:id/img_arrow").click()
+        xpath_follow_four = self.getXpath_data(get_xpath_list, "xpath_follow_four")
+        self.driver.find_element_by_xpath(xpath_follow_four).click()
+        self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        print("个人档案-正在关注测试通过")
+        #个人档案-粉丝
+        self.driver.find_element_by_id("com.hellotalk:id/follower_layout").click()
+        xpath_fans_one = self.getXpath_data(get_xpath_list, "xpath_fans_one")
+        self.driver.find_element_by_xpath(xpath_fans_one).click()
+        time.sleep(1)
+        self.driver.back()
+        xpath_fans_two = self.getXpath_data(get_xpath_list, "xpath_fans_two")
+        self.driver.find_element_by_xpath(xpath_fans_two).click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        xpath_fans_two = self.getXpath_data(get_xpath_list, "xpath_fans_two")
+        self.driver.find_element_by_xpath(xpath_fans_two).click()
+        self.driver.find_element_by_accessibility_id("向上瀏覽").click()
+        print("个人档案-粉丝测试通过")
+        #翻译、音译、语句收藏、语音转文字次数、句子朗读次数、帮伙伴修改句子次数
+        self.driver.find_element_by_id("com.hellotalk:id/profile_translate_points").click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        self.driver.find_element_by_id("com.hellotalk:id/profile_transliteration_points").click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        self.driver.find_element_by_id("com.hellotalk:id/profile_favorite_points").click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        self.driver.find_element_by_id("com.hellotalk:id/profile_vtt_points").click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        self.driver.find_element_by_id("com.hellotalk:id/profile_speak_points").click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        self.driver.find_element_by_id("com.hellotalk:id/profile_correction_points").click()
+        self.driver.find_element_by_id("android:id/button1").click()
+        print("个人档案-粉翻译、音译、语句收藏、语音转文字次数、句子朗读次数、帮伙伴修改句子次数测试通过")
 
 # if __name__ == '__main__':
 #     unittest.main()

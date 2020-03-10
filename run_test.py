@@ -6,7 +6,7 @@
 @site: 
 @software: PyCharm
 @file: run_test.py
-@time: 2020/1/8 20:25
+@time: 2020/2/10 20:25
 """
 
 import unittest,HTMLTestReportCN
