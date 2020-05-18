@@ -1,7 +1,7 @@
 # encoding: utf-8
 """
 @version: v1.0.1
-@time: 2020/1/7 19:47
+@time: 2020/3/9 19:47
 """
 import unittest,os,requests
 from datetime import datetime
@@ -47,24 +47,28 @@ class TestCaseSet(unittest.TestCase):
         return pic
 
 
-    def test_index(self):
-        url = TestCaseSet().url.getData("no_login_woman")
-        for u in url:
-            self.assertionT('get', u, u+'趋势汇_未登录_女装')
-
-
-    def test_panning_case(self):
-        url = TestCaseSet().url.getData("no_login_panning_case")
-        for u in url:
-            self.assertionT('get', u, u+'趋势汇_企划案')
+    # def test_index(self):
+    #     #     url = TestCaseSet().url.getData("no_login_woman")
+    #     #     for u in url:
+    #     #         self.assertionT('get', u, u+'趋势汇_未登录_女装')
+    #     #
+    #     #
+    #     # def test_panning_case(self):
+    #     #     url = TestCaseSet().url.getData("no_login_panning_case")
+    #     #     for u in url:
+    #     #         self.assertionT('get', u, u+'趋势汇_企划案')
 
     def test_login(self):
-        data = {
-            "username": "13333333330",
-            "password": "6846860684f05029abccc09a53cd66f1"
-        }
-        self.assertionT('post_x', 'https://testpc.rstrend.com/api/login',
-                        'https://testpc.rstrend.com/api/login,趋势汇_登录', data)
+        # data = {
+        #     "username": "13333333330",
+        #     "password": "6846860684f05029abccc09a53cd66f1"
+        # }
+        # self.assertionT('post_x', 'https://testpc.rstrend.com/api/login',
+        #                 'https://testpc.rstrend.com/api/login,趋势汇_登录', data)
+        url = "http://www.baidu.com"
+
+        re = requests.get("http://www.baidu.com")
+        print(re.json())
 
 
 
